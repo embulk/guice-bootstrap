@@ -1,6 +1,6 @@
 # Guice-bootstrap
 
-Gouice-bootstrap is an extension of [Guice](https://github.com/google/guice) that adds support for JSR 250 Life Cycle annotations.
+Guice-bootstrap is an extension of [Guice](https://github.com/google/guice) that adds support for JSR 250 Life Cycle annotations.
 
 **@PostConstruct** annotation is used on methods that need to get executed after dependency injection is done to perform any initialization.
 
