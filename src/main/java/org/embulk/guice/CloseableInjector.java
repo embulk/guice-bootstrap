@@ -21,7 +21,7 @@ public interface CloseableInjector
         extends LifeCycleInjector, AutoCloseable
 {
     /**
-     * Calls Methods with {@PreDestroy} annotation.
+     * Calls Methods with @PreDestroy annotation.
      */
-    public close() throws Exception;
+    void close() throws Exception;
 }

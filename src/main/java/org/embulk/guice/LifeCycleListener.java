@@ -41,21 +41,31 @@ public interface LifeCycleListener
 
     /**
      * Called when post construction of an object starts
+     *
+     * @param object the object that will be constructed
      */
     void startingInstance(Object object);
 
     /**
      * Called when a post construction method of an object is called
+     *
+     * @param object the object that has PostConstruct method
+     * @param postConstructMethod the Method object of the PostConstruct method
      */
     void postConstructingInstance(Object object, Method postConstructMethod);
 
     /**
      * Called when pre destruction of an object starts
+     *
+     * @param object the object that will be destroyed
      */
     void stoppingInstance(Object object);
 
     /**
      * Called when a pre destruction method of an object is called
+     *
+     * @param object the object that has PreDestroy method
+     * @param preDestroyMethod the Method object of the PreDestroy method
      */
     void preDestroyingInstance(Object object, Method preDestroyMethod);
 }
