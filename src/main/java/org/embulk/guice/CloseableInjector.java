@@ -19,4 +19,9 @@ import com.google.inject.Injector;
 
 public interface CloseableInjector
         extends LifeCycleInjector, AutoCloseable
-{ }
+{
+    /**
+     * Calls Methods with {@PreDestroy} annotation.
+     */
+    public close() throws Exception;
+}

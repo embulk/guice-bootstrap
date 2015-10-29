@@ -46,15 +46,13 @@ class LifeCycleInjectorProxy
     }
 
     @Override
-    public synchronized void destroy()
-            throws Exception
+    public synchronized void destroy() throws Exception
     {
-        lifeCycleManager.destroy();  // reentrant
+        lifeCycleManager.destroy();  // LifeCycleManager.destroy is reentrant
     }
 
     @Override
-    public void close()
-            throws Exception
+    public void close() throws Exception
     {
         destroy();
     }

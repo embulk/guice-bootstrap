@@ -28,7 +28,6 @@ import com.google.inject.Injector;
 import java.util.Arrays;
 import java.util.List;
 
-@Beta
 public class Bootstrap
 {
     private List<Module> modules;
