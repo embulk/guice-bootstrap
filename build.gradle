@@ -1,0 +1,37 @@
+plugins {
+    id "java"
+}
+
+version = "0.1.0"
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+javadoc {
+    options {
+        locale = 'en_US'
+        encoding = 'UTF-8'
+    }
+}
+
+dependencies {
+    compile 'com.google.inject:guice:4.0'
+    testCompile 'org.testng:testng:6.9.9'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+test {
+    useTestNG()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+}
