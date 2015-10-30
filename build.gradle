@@ -1,7 +1,10 @@
 plugins {
     id "java"
+    id "maven-publish"
+    id "com.jfrog.bintray" version "1.4"
 }
 
+group = 'org.embulk'
 version = "0.1.0"
 
 repositories {
@@ -35,3 +38,56 @@ test {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.8'
 }
+
+// add tests/javadoc/source jar tasks as artifacts to be released
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+publishing {
+    publications {
+        bintrayMavenRelease(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+bintray {
+    // write at your bintray user name and api key to ~/.gradle/gradle.properties file:
+    // bintray_user=xxxxxx
+    // bintray_api_key=yyyyyyyyyyyy
+    user = project.hasProperty('bintray_user') ? bintray_user : ''
+    key = project.hasProperty('bintray_api_key') ? bintray_api_key : ''
+
+    publications = ['bintrayMavenRelease']
+
+    dryRun = false
+    publish = false
+
+    pkg {
+        userOrg = 'embulk'
+        repo = 'maven'
+        name = 'guice-bootstrap'
+        desc = 'Guice-bootstrap adds JSR 250 Life Cycle annotations to Google Guice'
+        websiteUrl = 'http://guice.embulk.org/'
+        issueTrackerUrl = 'https://github.com/embulk/guice-bootstrap/issues'
+        vcsUrl = 'https://github.com/embulk/guice-bootstrap.git'
+        licenses = ['Apache-2.0']
+        labels = ['guice', 'inject', 'java']
+
+        version {
+            name = project.version
+        }
+    }
+}
+
