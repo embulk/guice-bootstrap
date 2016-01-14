@@ -36,7 +36,7 @@ test {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.8'
+    gradleVersion = '2.10'
 }
 
 // add tests/javadoc/source jar tasks as artifacts to be released
