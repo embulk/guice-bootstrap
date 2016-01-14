@@ -57,9 +57,14 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> {
-                    binder.bind(InstanceThatRequiresStart.class).in(Scopes.SINGLETON);
-                    binder.bind(InstanceThatUsesInstanceThatRequiresStart.class).in(Scopes.SINGLETON);
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(InstanceThatRequiresStart.class).in(Scopes.SINGLETON);
+                        binder.bind(InstanceThatUsesInstanceThatRequiresStart.class).in(Scopes.SINGLETON);
+                    }
                 });
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
@@ -75,15 +80,22 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> binder.install(new PrivateModule()
+                new Module()
                 {
                     @Override
-                    protected void configure()
+                    public void configure(Binder binder)
                     {
-                        binder().bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
-                        binder().expose(SimpleBase.class);
+                        binder.install(new PrivateModule()
+                        {
+                            @Override
+                            protected void configure()
+                            {
+                                binder().bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
+                                binder().expose(SimpleBase.class);
+                            }
+                        });
                     }
-                }));
+                });
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
@@ -100,7 +112,14 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> binder.bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON));
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(SimpleBase.class).to(SimpleBaseImpl.class).in(Scopes.SINGLETON);
+                    }
+                });
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         lifeCycleManager.start();
@@ -118,10 +137,15 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> {
-                    binder.bind(AnInstance.class).in(Scopes.SINGLETON);
-                    binder.bind(AnotherInstance.class).in(Scopes.SINGLETON);
-                    binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(AnInstance.class).in(Scopes.SINGLETON);
+                        binder.bind(AnotherInstance.class).in(Scopes.SINGLETON);
+                        binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
+                    }
                 });
 
         injector.getInstance(AnotherInstance.class);
@@ -188,9 +212,14 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> {
-                    binder.bind(AnInstance.class).in(Scopes.SINGLETON);
-                    binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(AnInstance.class).in(Scopes.SINGLETON);
+                        binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
+                    }
                 });
         injector.getInstance(AnInstance.class);
 
@@ -208,9 +237,14 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> {
-                    binder.bind(PostConstructOnly.class).in(Scopes.SINGLETON);
-                    binder.bind(PreDestroyOnly.class).in(Scopes.SINGLETON);
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(PostConstructOnly.class).in(Scopes.SINGLETON);
+                        binder.bind(PreDestroyOnly.class).in(Scopes.SINGLETON);
+                    }
                 });
         injector.getInstance(PostConstructOnly.class);
 
@@ -229,12 +263,17 @@ public class TestLifeCycleManager
         Injector injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 new LifeCycleModule(),
-                binder -> {
-                    binder.bind(DependentBoundInstance.class).to(DependentInstanceImpl.class).in(Scopes.SINGLETON);
+                new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(DependentBoundInstance.class).to(DependentInstanceImpl.class).in(Scopes.SINGLETON);
 
-                    binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
-                    binder.bind(InstanceOne.class).in(Scopes.SINGLETON);
-                    binder.bind(InstanceTwo.class).in(Scopes.SINGLETON);
+                        binder.bind(DependentInstance.class).in(Scopes.SINGLETON);
+                        binder.bind(InstanceOne.class).in(Scopes.SINGLETON);
+                        binder.bind(InstanceTwo.class).in(Scopes.SINGLETON);
+                    }
                 });
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
