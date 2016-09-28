@@ -26,6 +26,7 @@ import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.google.inject.Stage;
 import com.google.inject.Injector;
+import com.google.inject.util.Modules;
 import java.util.Arrays;
 import java.util.List;
 
@@ -70,6 +71,23 @@ public class Bootstrap
     {
         modules = ImmutableList.copyOf(Iterables.concat(modules, additionalModules));
         return this;
+    }
+
+    public Bootstrap overrideModulesWith(Module... overridingModules)
+    {
+        return overrideModulesWith(ImmutableList.copyOf(overridingModules));
+    }
+
+    public Bootstrap overrideModulesWith(Iterable<? extends Module> overridingModules)
+    {
+        final List<Module> immutableCopy = ImmutableList.copyOf(overridingModules);
+
+        return overrideModules(new Function<List<Module>, List<Module>>() {
+            public List<Module> apply(List<Module> modules)
+            {
+                return ImmutableList.of(Modules.override(modules).with(immutableCopy));
+            }
+        });
     }
 
     //public Bootstrap forEachModule(Consumer<? super Module> function)
