@@ -38,7 +38,7 @@ public final class LifeCycleManager
     private final AtomicReference<State> state = new AtomicReference<State>(State.LATENT);
     private final Queue<Object> managedInstances = new ConcurrentLinkedQueue<Object>();
     private final LifeCycleMethodsMap methodsMap;
-    private final LifeCycleListener listener;
+    private final List<LifeCycleListener> listeners;
 
     private enum State
     {
@@ -52,14 +52,14 @@ public final class LifeCycleManager
     /**
      * @param managedInstances list of objects that have life cycle annotations
      * @param methodsMap existing or new methods map
-     * @param listener listner called when state changes
+     * @param listeners listeners called when state changes
      * @throws Exception exceptions starting instances (depending on mode)
      */
-    public LifeCycleManager(List<Object> managedInstances, LifeCycleMethodsMap methodsMap, LifeCycleListener listener)
+    public LifeCycleManager(List<Object> managedInstances, LifeCycleMethodsMap methodsMap, List<LifeCycleListener> listeners)
             throws Exception
     {
         this.methodsMap = (methodsMap != null) ? methodsMap : new LifeCycleMethodsMap();
-        this.listener = listener;
+        this.listeners = listeners;
         for (Object instance : managedInstances) {
             addInstance(instance);
         }
@@ -83,7 +83,7 @@ public final class LifeCycleManager
         if (!state.compareAndSet(State.LATENT, State.STARTING)) {
             throw new IllegalStateException("System already starting");
         }
-        if (listener != null) {
+        for (LifeCycleListener listener : listeners) {
             listener.startingLifeCycle();
         }
 
@@ -95,7 +95,7 @@ public final class LifeCycleManager
         }
 
         state.set(State.STARTED);
-        if (listener != null) {
+        for (LifeCycleListener listener : listeners) {
             listener.startedLifeCycle();
         }
     }
@@ -132,7 +132,7 @@ public final class LifeCycleManager
         if (!state.compareAndSet(State.STARTED, State.STOPPING)) {
             return;
         }
-        if (listener != null) {
+        for (LifeCycleListener listener : listeners) {
             listener.stoppingLifeCycle();
         }
 
@@ -140,12 +140,12 @@ public final class LifeCycleManager
         Collections.reverse(reversedInstances);
 
         for (Object obj : reversedInstances) {
-            if (listener != null) {
+            for (LifeCycleListener listener : listeners) {
                 listener.stoppingInstance(obj);
             }
             LifeCycleMethods methods = methodsMap.get(obj.getClass());
             for (Method preDestroy : methods.methodsFor(PreDestroy.class)) {
-                if (listener != null) {
+                for (LifeCycleListener listener : listeners) {
                     listener.preDestroyingInstance(obj, preDestroy);
                 }
                 preDestroy.invoke(obj);
@@ -153,7 +153,7 @@ public final class LifeCycleManager
         }
 
         state.set(State.STOPPED);
-        if (listener != null) {
+        for (LifeCycleListener listener : listeners) {
             listener.stoppedLifeCycle();
         }
     }
@@ -192,12 +192,12 @@ public final class LifeCycleManager
     private void startInstance(Object obj)
             throws IllegalAccessException, InvocationTargetException
     {
-        if (listener != null) {
+        for (LifeCycleListener listener : listeners) {
             listener.startingInstance(obj);
         }
         LifeCycleMethods methods = methodsMap.get(obj.getClass());
         for (Method postConstruct : methods.methodsFor(PostConstruct.class)) {
-            if (listener != null) {
+            for (LifeCycleListener listener : listeners) {
                 listener.postConstructingInstance(obj, postConstruct);
             }
             postConstruct.invoke(obj);

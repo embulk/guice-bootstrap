@@ -18,6 +18,7 @@ package org.embulk.guice;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.annotations.Beta;
 
 import com.google.inject.Binder;
@@ -32,7 +33,7 @@ public class Bootstrap
 {
     private List<Module> modules;
 
-    private LifeCycleListener lifeCycleListener = null;
+    private List<LifeCycleListener> lifeCycleListeners = Lists.newArrayList();
 
     private boolean requireExplicitBindings = true;
 
@@ -48,9 +49,9 @@ public class Bootstrap
         this.modules = ImmutableList.copyOf(modules);
     }
 
-    public Bootstrap useLifeCycleListener(LifeCycleListener listener)
+    public Bootstrap addLifeCycleListeners(LifeCycleListener... listener)
     {
-        this.lifeCycleListener = listener;
+        this.lifeCycleListeners.addAll(Arrays.asList(listener));
         return this;
     }
 
@@ -138,7 +139,7 @@ public class Bootstrap
             }
         });
 
-        moduleList.add(new LifeCycleModule(lifeCycleListener));
+        moduleList.add(new LifeCycleModule(ImmutableList.copyOf(lifeCycleListeners)));
 
         Injector injector = Guice.createInjector(Stage.PRODUCTION, moduleList.build());
 

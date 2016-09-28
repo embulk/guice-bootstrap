@@ -19,6 +19,7 @@
 package org.embulk.guice;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
@@ -43,16 +44,16 @@ public class LifeCycleModule implements Module
     private final List<Object> injectedInstances = Lists.newArrayList();
     private final LifeCycleMethodsMap lifeCycleMethodsMap = new LifeCycleMethodsMap();
     private final AtomicReference<LifeCycleManager> lifeCycleManagerRef = new AtomicReference<LifeCycleManager>(null);
-    private final LifeCycleListener listener;
+    private final List<LifeCycleListener> listeners;
 
     public LifeCycleModule()
     {
-        this(null);
+        this(ImmutableList.<LifeCycleListener>of());
     }
 
-    public LifeCycleModule(LifeCycleListener listener)
+    public LifeCycleModule(List<LifeCycleListener> listeners)
     {
-        this.listener = listener;
+        this.listeners = listeners;
     }
 
     @Override
@@ -95,7 +96,7 @@ public class LifeCycleModule implements Module
     public LifeCycleManager getServerManager()
             throws Exception
     {
-        LifeCycleManager lifeCycleManager = new LifeCycleManager(injectedInstances, lifeCycleMethodsMap, listener);
+        LifeCycleManager lifeCycleManager = new LifeCycleManager(injectedInstances, lifeCycleMethodsMap, listeners);
         lifeCycleManagerRef.set(lifeCycleManager);
         return lifeCycleManager;
     }
