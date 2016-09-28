@@ -1,4 +1,15 @@
 
+Release 0.2.0 - 2016-09-27
+
+* Added support for multiple LifeCycleListener instances.
+  Added Bootstrap.addLifeCycleListeners method.
+  Removed Bootstrap.useLifeCycleListeners method.
+
+* Added Bootstrap.overrideModulesWith method.
+
+* Bootstrap runs overrideModules functions lazily.
+
+
 Release 0.1.1 - 2016-01-13
 
 * Added support for Java 7
