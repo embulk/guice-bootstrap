@@ -1,7 +1,7 @@
 plugins {
     id "java"
     id "maven-publish"
-    id "com.jfrog.bintray" version "1.4"
+    id "com.jfrog.bintray" version "1.7.1"
 }
 
 group = 'org.embulk'
@@ -64,11 +64,12 @@ publishing {
 }
 
 bintray {
-    // write at your bintray user name and api key to ~/.gradle/gradle.properties file:
+    // Set bintray user name and api key to BINTRAY_USER and BINTRAY_KEY environment variables
+    // or write them to ~/.gradle/gradle.properties file:
     // bintray_user=xxxxxx
     // bintray_api_key=yyyyyyyyyyyy
-    user = project.hasProperty('bintray_user') ? bintray_user : ''
-    key = project.hasProperty('bintray_api_key') ? bintray_api_key : ''
+    user = project.hasProperty('bintray_user') ? bintray_user : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintray_api_key') ? bintray_api_key : System.getenv('BINTRAY_KEY')
 
     publications = ['bintrayMavenRelease']
 
