@@ -19,22 +19,23 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.annotations.Beta;
 
 import com.google.inject.Binder;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
-import com.google.inject.Injector;
 import com.google.inject.util.Modules;
-import java.util.Arrays;
+
 import java.util.List;
 
 public class Bootstrap
 {
-    private List<Module> modules;
+    private final List<Module> modules = Lists.newArrayList();
 
-    private List<LifeCycleListener> lifeCycleListeners = Lists.newArrayList();
+    private final List<Function<? super List<Module>, ? extends Iterable<? extends Module>>> moduleOverrides = Lists.newArrayList();
+
+    private final List<LifeCycleListener> lifeCycleListeners = Lists.newArrayList();
 
     private boolean requireExplicitBindings = true;
 
@@ -42,17 +43,22 @@ public class Bootstrap
 
     public Bootstrap(Module... modules)
     {
-        this(Arrays.asList(modules));
+        this(ImmutableList.copyOf(modules));
     }
 
     public Bootstrap(Iterable<? extends Module> modules)
     {
-        this.modules = ImmutableList.copyOf(modules);
+        this.modules.addAll(ImmutableList.copyOf(modules));
     }
 
-    public Bootstrap addLifeCycleListeners(LifeCycleListener... listener)
+    public Bootstrap addLifeCycleListeners(LifeCycleListener... listeners)
     {
-        this.lifeCycleListeners.addAll(Arrays.asList(listener));
+        return addLifeCycleListeners(ImmutableList.copyOf(listeners));
+    }
+
+    public Bootstrap addLifeCycleListeners(Iterable<? extends LifeCycleListener> listeners)
+    {
+        this.lifeCycleListeners.addAll(ImmutableList.copyOf(listeners));
         return this;
     }
 
@@ -64,12 +70,12 @@ public class Bootstrap
 
     public Bootstrap addModules(Module... additionalModules)
     {
-        return addModules(Arrays.asList(additionalModules));
+        return addModules(ImmutableList.copyOf(additionalModules));
     }
 
     public Bootstrap addModules(Iterable<? extends Module> additionalModules)
     {
-        modules = ImmutableList.copyOf(Iterables.concat(modules, additionalModules));
+        modules.addAll(ImmutableList.copyOf(additionalModules));
         return this;
     }
 
@@ -90,27 +96,9 @@ public class Bootstrap
         });
     }
 
-    //public Bootstrap forEachModule(Consumer<? super Module> function)
-    //{
-    //    for (Module module : modules) {
-    //        function.accept(module);
-    //    }
-    //    return this;
-    //}
-
-    //public <T> Bootstrap forEachModule(Class<T> ifClass, Consumer<? super T> function)
-    //{
-    //    for (Module module : modules) {
-    //        if (ifClass.instance(module) {
-    //            function.accept(module);
-    //        }
-    //    }
-    //    return this;
-    //}
-
     public Bootstrap overrideModules(Function<? super List<Module>, ? extends Iterable<? extends Module>> function)
     {
-        modules = ImmutableList.copyOf(function.apply(modules));
+        moduleOverrides.add(function);
         return this;
     }
 
@@ -136,16 +124,21 @@ public class Bootstrap
 
     private Injector start()
     {
+        List<Module> userModules = ImmutableList.copyOf(modules);
+        for (Function<? super List<Module>, ? extends Iterable<? extends Module>> moduleOverride : moduleOverrides) {
+            userModules = ImmutableList.copyOf(moduleOverride.apply(userModules));
+        }
+
         if (started) {
             throw new IllegalStateException("System already initialized");
         }
         started = true;
 
-        ImmutableList.Builder<Module> moduleList = ImmutableList.builder();
+        ImmutableList.Builder<Module> builder = ImmutableList.builder();
 
-        moduleList.addAll(modules);
+        builder.addAll(userModules);
 
-        moduleList.add(new Module()
+        builder.add(new Module()
         {
             @Override
             public void configure(Binder binder)
@@ -157,9 +150,9 @@ public class Bootstrap
             }
         });
 
-        moduleList.add(new LifeCycleModule(ImmutableList.copyOf(lifeCycleListeners)));
+        builder.add(new LifeCycleModule(ImmutableList.copyOf(lifeCycleListeners)));
 
-        Injector injector = Guice.createInjector(Stage.PRODUCTION, moduleList.build());
+        Injector injector = Guice.createInjector(Stage.PRODUCTION, builder.build());
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         if (lifeCycleManager.size() > 0) {
