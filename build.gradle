@@ -1,10 +1,11 @@
 plugins {
-    id "java"
-    id "maven-publish"
     id "com.jfrog.bintray" version "1.7.1"
 }
 
-group = 'org.embulk'
+apply plugin: "java"
+apply plugin: "maven-publish"
+
+group = "org.embulk"
 version = "0.2.0"
 
 repositories {
@@ -59,6 +60,16 @@ publishing {
             from components.java
             artifact sourcesJar
             artifact javadocJar
+
+            pom.withXml {
+                asNode().dependencies.dependency.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each() {
+                    it.scope*.value = 'compile'
+                }
+            }
         }
     }
 }
