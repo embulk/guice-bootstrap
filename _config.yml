@@ -1,0 +1,8 @@
+title: Guice-bootstrap
+description: Add JSR 250 Life Cycle annotations to Google Guice
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-architect
+
+gems:
+  - jekyll-mentions
