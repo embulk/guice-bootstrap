@@ -1,6 +1,6 @@
 # Guice-bootstrap
 
-Gouice-bootstrap is an extension of [Guice](https://github.com/google/guice) that adds support for JSR 250 Life Cycle annotations.
+Guice-bootstrap is an extension of [Guice](https://github.com/google/guice) that adds support for JSR 250 Life Cycle annotations.
 
 **@PostConstruct** annotation is used on methods that need to get executed after dependency injection is done to perform any initialization.
 
@@ -58,6 +58,40 @@ Injector injector = new Bootstrap()
     .initialize();
 ```
 
+### Overriding bindings
+
+**Bootstrap.overrideModulesWith** method allows you to override bindings. This is useful to customize bindings defined by a base class.
+
+```java
+// The base class
+public class MyService {
+    public Bootstrap bootstrap()
+    {
+        return new Bootstrap()
+            .addModules(new MyGuiceModule1(), new MyGuiceModule2(), ...)
+            .addModules(new MyGuiceModule3(), new MyGuiceModule4(), ...)
+            ;
+    }
+
+    public void start()
+    {
+        Injector injector = bootstrap().initialize();
+        ...
+    }
+}
+
+// Extending class that overrides some bindings
+public class MyExtendedService extend MyService {
+    @Override
+    public Bootstrap bootstrap()
+    {
+        return super()
+            .overrideModulesWith(new MyGuiceModule4(), ...)
+            ;
+    }
+}
+```
+
 ## CloseableInjector
 
 `Bootstrap.initialize()` sets up a shutdown hook to the Java VM (@Runtime.addShutdownHook`). It ensures that PostDestroy methods are called when Java VM exits even if it's killed by a SIGTERM or Ctrl-C.
@@ -72,4 +106,3 @@ try (CloseableInjector injector = bootstrap.initializeCloseable()) {
     ...
 }
 ```
-
