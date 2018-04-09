@@ -37,10 +37,6 @@ test {
     useTestNG()
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.1'
-}
-
 // add tests/javadoc/source jar tasks as artifacts to be released
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
