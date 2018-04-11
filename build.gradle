@@ -1,12 +1,11 @@
-plugins {
-    id "com.jfrog.bintray" version "1.7.1"
-}
-
 apply plugin: "java"
-apply plugin: "maven-publish"
+apply plugin: "maven"
+apply plugin: "signing"
 
 group = "org.embulk"
+archivesBaseName = "${project.name}"
 version = "0.3.0-SNAPSHOT"
+description "Guice-bootstrap adds JSR 250 Life Cycle annotations to Google Guice"
 
 repositories {
     mavenCentral()
@@ -50,52 +49,84 @@ artifacts {
     archives sourcesJar, javadocJar
 }
 
-publishing {
-    publications {
-        bintrayMavenRelease(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom.withXml {
-                asNode().dependencies.dependency.findAll() {
-                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
-                        dep.name == it.artifactId.text()
-                    }
-                }.each() {
-                    it.scope*.value = 'compile'
-                }
-            }
-        }
-    }
+signing {
+    sign configurations.archives
 }
 
-bintray {
-    // Set bintray user name and api key to BINTRAY_USER and BINTRAY_KEY environment variables
-    // or write them to ~/.gradle/gradle.properties file:
-    // bintray_user=xxxxxx
-    // bintray_api_key=yyyyyyyyyyyy
-    user = project.hasProperty('bintray_user') ? bintray_user : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintray_api_key') ? bintray_api_key : System.getenv('BINTRAY_KEY')
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
 
-    publications = ['bintrayMavenRelease']
+            if (project.hasProperty("mavenCentral")) {
+                if (!(project.hasProperty("sonatype.userName") && project.hasProperty("sonatype.password"))) {
+                    throw new GradleException("Set sonatype.userName and sonatype.password to upload to Maven Central.")
+                }
 
-    dryRun = false
-    publish = false
+                // Do not assign SNAPSHOTs a unique version comprised of the timestamp and build number.
+                uniqueVersion = project.findProperty("mavenUniqueVersion") ?: false
 
-    pkg {
-        userOrg = 'embulk'
-        repo = 'maven'
-        name = 'guice-bootstrap'
-        desc = 'Guice-bootstrap adds JSR 250 Life Cycle annotations to Google Guice'
-        websiteUrl = 'http://guice.embulk.org/'
-        issueTrackerUrl = 'https://github.com/embulk/guice-bootstrap/issues'
-        vcsUrl = 'https://github.com/embulk/guice-bootstrap.git'
-        licenses = ['Apache-2.0']
-        labels = ['guice', 'inject', 'java']
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: project.getProperty("sonatype.userName"),
+                                   password: project.getProperty("sonatype.password"))
+                }
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: project.getProperty("sonatype.userName"),
+                                   password: project.getProperty("sonatype.password"))
+                }
+            } else {
+                repository(url: "file:${project.buildDir}/mavenLocal")
+                snapshotRepository(url: "file:${project.buildDir}/mavenLocalSnapshot")
+            }
 
-        version {
-            name = project.version
+            pom.project {
+                artifactId "${project.name}"
+                groupId "${project.group}"
+
+                packaging "jar"
+
+                name "${project.name}"
+                description "${project.description}"
+                url "http://guice.embulk.org/"
+
+                scm {
+                    url "https://github.com/embulk/guice-bootstrap"
+                    connection "scm:git:git://github.com/embulk/guice-bootstrap.git"
+                    developerConnection "scm:git:git@github.com:embulk/guice-bootstrap.git"
+                }
+
+                issueManagement {
+                    url 'https://github.com/embulk/guice-bootstrap/issues'
+                }
+
+                licenses {
+                    license {
+                        // http://central.sonatype.org/pages/requirements.html#license-information
+                        name "The Apache License, Version 2.0"
+                        url "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id "frsyuki"
+                        name "Sadayuki Furuhashi"
+                        email "frsyuki@gmail.com"
+                    }
+                }
+
+                contributors {
+                    contributor {
+                        name "Dai MIKURUBE"
+                        email "dmikurube@treasure-data.com"
+                        roles {
+                            role "maintainer"
+                        }
+                    }
+                }
+            }
         }
     }
 }
