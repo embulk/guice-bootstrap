@@ -36,14 +36,23 @@ test {
     useTestNG()
 }
 
+jar {
+    from rootProject.file("LICENSE")
+    from rootProject.file("NOTICE")
+}
+
 // add tests/javadoc/source jar tasks as artifacts to be released
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
+    from rootProject.file("LICENSE")
+    from rootProject.file("NOTICE")
 }
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
+    from rootProject.file("LICENSE")
+    from rootProject.file("NOTICE")
 }
 artifacts {
     archives sourcesJar, javadocJar
