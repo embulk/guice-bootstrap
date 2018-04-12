@@ -1,3 +1,9 @@
+Release 0.3.0 - 2018-04-12
+
+* Release guice-bootstrap on Maven Central instead of JCenter/Bintray.
+* Get guice-bootstrap built with Java 8. Java 7 is no longer supported.
+* Include LICENSE and NOTICE files in all distributed packages.
+
 
 Release 0.2.1 - 2016-09-28
 
@@ -23,4 +29,3 @@ Release 0.1.1 - 2016-01-13
 Release 0.1.0 - 2015-10-29
 
 * The first release
-
