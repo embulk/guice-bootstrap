@@ -4,7 +4,7 @@ apply plugin: "signing"
 
 group = "org.embulk"
 archivesBaseName = "${project.name}"
-version = "0.3.0-SNAPSHOT"
+version = "0.3.1"
 description "Guice-bootstrap adds JSR 250 Life Cycle annotations to Google Guice"
 
 repositories {
