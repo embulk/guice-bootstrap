@@ -1,3 +1,8 @@
+Release 0.3.2 - 2018-09-27
+
+* Deprecate the usage of Guava's Function, and use java.util.function.Function
+
+
 Release 0.3.1 - 2018-06-13
 
 * Depend on Guice 4.2.0 to make it work with JDK 10
