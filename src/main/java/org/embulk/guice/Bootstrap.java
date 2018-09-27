@@ -15,7 +15,6 @@
  */
 package org.embulk.guice;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -28,6 +27,7 @@ import com.google.inject.Stage;
 import com.google.inject.util.Modules;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class Bootstrap
 {
@@ -94,6 +94,19 @@ public class Bootstrap
                 return ImmutableList.of(Modules.override(modules).with(immutableCopy));
             }
         });
+    }
+
+    @Deprecated  // Using Guava's Function is deprecated.
+    public Bootstrap overrideModules(final com.google.common.base.Function<? super List<Module>, ? extends Iterable<? extends Module>> function)
+    {
+        final Function<? super List<Module>, ? extends Iterable<? extends Module>> wrapper =
+                new Function<List<Module>, Iterable<? extends Module>>() {
+                    public Iterable<? extends Module> apply(final List<Module> modules) {
+                        return function.apply(modules);
+                    }
+                };
+        moduleOverrides.add(wrapper);
+        return this;
     }
 
     public Bootstrap overrideModules(Function<? super List<Module>, ? extends Iterable<? extends Module>> function)
