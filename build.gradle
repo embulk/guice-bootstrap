@@ -24,7 +24,7 @@ javadoc {
 }
 
 dependencies {
-    compile 'com.google.inject:guice:4.2.0'
+    compile 'com.google.inject:guice:5.0.1'
     testCompile 'org.testng:testng:6.9.9'
 }
 

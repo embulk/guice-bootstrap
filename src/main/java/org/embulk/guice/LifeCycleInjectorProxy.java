@@ -16,6 +16,12 @@
 package org.embulk.guice;
 
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
+import com.google.inject.spi.Element;
+import com.google.inject.spi.InjectionPoint;
+
+import java.util.List;
+import java.util.Map;
 
 class LifeCycleInjectorProxy
         extends InjectorProxy
@@ -55,5 +61,17 @@ class LifeCycleInjectorProxy
     public void close() throws Exception
     {
         destroy();
+    }
+
+    @Override
+    public List<Element> getElements()
+    {
+        return injector.getElements();
+    }
+
+    @Override
+    public Map<TypeLiteral<?>, List<InjectionPoint>> getAllMembersInjectorInjectionPoints()
+    {
+        return injector.getAllMembersInjectorInjectionPoints();
     }
 }
