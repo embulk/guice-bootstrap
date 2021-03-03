@@ -19,6 +19,7 @@ import com.google.inject.Binder;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Module;
 import com.google.inject.ProvisionException;
+import com.google.inject.Stage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -33,6 +34,20 @@ public class TestBootstrap
         Bootstrap bootstrap = new Bootstrap();
         try {
             bootstrap.initialize().getInstance(Instance.class);
+            Assert.fail("should require explicit bindings");
+        }
+        catch (ConfigurationException e) {
+            assertContains(e.getErrorMessages().iterator().next().getMessage(), "Explicit bindings are required");
+        }
+    }
+
+    @Test
+    public void testRequiresExplicitBindingsWithStageDevelopment()
+            throws Exception
+    {
+        Bootstrap bootstrap = new Bootstrap();
+        try {
+            bootstrap.initialize(Stage.DEVELOPMENT).getInstance(Instance.class);
             Assert.fail("should require explicit bindings");
         }
         catch (ConfigurationException e) {
@@ -56,6 +71,29 @@ public class TestBootstrap
 
         try {
             bootstrap.initialize().getInstance(InstanceA.class);
+            Assert.fail("should not allow circular dependencies");
+        }
+        catch (ProvisionException e) {
+            assertContains(e.getErrorMessages().iterator().next().getMessage(), "circular dependencies are disabled");
+        }
+    }
+
+    @Test
+    public void testDoesNotAllowCircularDependenciesWithStageDevelopment()
+            throws Exception
+    {
+        Bootstrap bootstrap = new Bootstrap(new Module()
+        {
+            @Override
+            public void configure(Binder binder)
+            {
+                binder.bind(InstanceA.class);
+                binder.bind(InstanceB.class);
+            }
+        });
+
+        try {
+            bootstrap.initialize(Stage.DEVELOPMENT).getInstance(InstanceA.class);
             Assert.fail("should not allow circular dependencies");
         }
         catch (ProvisionException e) {
