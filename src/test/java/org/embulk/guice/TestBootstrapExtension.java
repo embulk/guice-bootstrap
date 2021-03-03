@@ -17,6 +17,7 @@ package org.embulk.guice;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import com.google.inject.Stage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -82,6 +83,32 @@ public class TestBootstrapExtension
     }
 
     @Test
+    public void testAddModulesWithStageDevelopment()
+            throws Exception
+    {
+        Bootstrap bootstrap = new Bootstrap()
+                .addModules(new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(Class1.class);
+                    }
+                })
+                .addModules(new Module()
+                {
+                    @Override
+                    public void configure(Binder binder)
+                    {
+                        binder.bind(Interface1.class).to(Implementation1.class);
+                    }
+                });
+
+        Interface1 iface = bootstrap.initialize(Stage.DEVELOPMENT).getInstance(Interface1.class);
+        Assert.assertEquals(iface.get(), 1);
+    }
+
+    @Test
     public void testOverrideModules()
             throws Exception
     {
@@ -108,6 +135,32 @@ public class TestBootstrapExtension
     }
 
     @Test
+    public void testOverrideModulesWithStageDevelopment()
+            throws Exception
+    {
+        Bootstrap bootstrap = new Bootstrap()
+            .addModules(new Module()
+            {
+                @Override
+                public void configure(Binder binder)
+                {
+                    binder.bind(Interface1.class).to(Implementation1.class);
+                }
+            })
+            .overrideModulesWith(new Module()
+            {
+                @Override
+                public void configure(Binder binder)
+                {
+                    binder.bind(Interface1.class).to(Implementation2.class);
+                }
+            });
+
+        Interface1 iface = bootstrap.initialize(Stage.DEVELOPMENT).getInstance(Interface1.class);
+        Assert.assertEquals(iface.get(), 2);
+    }
+
+    @Test
     public void testOverrideModulesLazily()
             throws Exception
     {
@@ -130,6 +183,32 @@ public class TestBootstrapExtension
             });
 
         Interface1 iface = bootstrap.initialize().getInstance(Interface1.class);
+        Assert.assertEquals(iface.get(), 2);
+    }
+
+    @Test
+    public void testOverrideModulesLazilyWithStageDevelopment()
+            throws Exception
+    {
+        Bootstrap bootstrap = new Bootstrap()
+            .overrideModulesWith(new Module()
+            {
+                @Override
+                public void configure(Binder binder)
+                {
+                    binder.bind(Interface1.class).to(Implementation2.class);
+                }
+            })
+            .addModules(new Module()
+            {
+                @Override
+                public void configure(Binder binder)
+                {
+                    binder.bind(Interface1.class).to(Implementation1.class);
+                }
+            });
+
+        Interface1 iface = bootstrap.initialize(Stage.DEVELOPMENT).getInstance(Interface1.class);
         Assert.assertEquals(iface.get(), 2);
     }
 }

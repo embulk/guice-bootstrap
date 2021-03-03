@@ -16,7 +16,6 @@
 package org.embulk.guice;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import com.google.inject.Binder;
@@ -31,6 +30,7 @@ import java.util.function.Function;
 
 public class Bootstrap
 {
+    private static final Stage DEFAULT_STAGE = Stage.PRODUCTION;
     private final List<Module> modules = Lists.newArrayList();
 
     private final List<Function<? super List<Module>, ? extends Iterable<? extends Module>>> moduleOverrides = Lists.newArrayList();
@@ -117,17 +117,27 @@ public class Bootstrap
 
     public LifeCycleInjector initialize()
     {
-        return build(true);
+        return initialize(DEFAULT_STAGE);
+    }
+
+    public LifeCycleInjector initialize(Stage stage)
+    {
+        return build(true, stage);
     }
 
     public CloseableInjector initializeCloseable()
     {
-        return build(false);
+        return initializeCloseable(DEFAULT_STAGE);
     }
 
-    private LifeCycleInjectorProxy build(boolean destroyOnShutdownHook)
+    public CloseableInjector initializeCloseable(Stage stage)
     {
-        Injector injector = start();
+        return build(false, stage);
+    }
+
+    private LifeCycleInjectorProxy build(boolean destroyOnShutdownHook, Stage stage)
+    {
+        Injector injector = start(stage);
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         if (destroyOnShutdownHook) {
             lifeCycleManager.destroyOnShutdownHook();
@@ -135,7 +145,7 @@ public class Bootstrap
         return new LifeCycleInjectorProxy(injector, lifeCycleManager);
     }
 
-    private Injector start()
+    private Injector start(Stage stage)
     {
         List<Module> userModules = ImmutableList.copyOf(modules);
         for (Function<? super List<Module>, ? extends Iterable<? extends Module>> moduleOverride : moduleOverrides) {
@@ -165,7 +175,7 @@ public class Bootstrap
 
         builder.add(new LifeCycleModule(ImmutableList.copyOf(lifeCycleListeners)));
 
-        Injector injector = Guice.createInjector(Stage.PRODUCTION, builder.build());
+        Injector injector = Guice.createInjector(stage, builder.build());
 
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
         if (lifeCycleManager.size() > 0) {
