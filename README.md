@@ -1,3 +1,11 @@
+***Guice-bootstrap ([`org.embulk:guice-bootstrap`](https://central.sonatype.com/artifact/org.embulk/guice-bootstrap)) is no longer maintained.***
+
+If you wanted to use this updated, maintain your fork with taking care of its license.
+
+This is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0), but it has some modified copies from [Airlift](https://github.com/airlift/airlift)'s bootstrap.
+
+----
+
 # Guice-bootstrap
 
 Guice-bootstrap is an extension of [Guice](https://github.com/google/guice) that adds support for JSR 250 Life Cycle annotations.
@@ -106,4 +114,3 @@ try (CloseableInjector injector = bootstrap.initializeCloseable()) {
     ...
 }
 ```
-
